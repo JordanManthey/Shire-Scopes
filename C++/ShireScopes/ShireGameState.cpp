@@ -5,8 +5,10 @@
 #include "ShirePlayerState.h"
 #include "ShireGameInstance.h"
 #include "ShireAIController.h"
+#include "ShirePlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "steam/steam_api.h"
 
 AShireGameState::AShireGameState()
 {
@@ -78,6 +80,7 @@ void AShireGameState::AddMatchPlayerData(AController* NewPlayer)
 		
 		newMatchPlayerData.PlayerName = newBotController->BotName;
 		newMatchPlayerData.PlayerID = newBotController->BotID;
+		newMatchPlayerData.SteamID = FString::FromInt(newBotController->BotID); // Giving bots a SteamID for testing purposes.
 		newMatchPlayerData.Team = newBotController->Team;
 		persistedPlayerData = shireGameInstance->GetLobbyBotData(newMatchPlayerData.PlayerID);
 	}
@@ -105,6 +108,22 @@ void AShireGameState::AddMatchPlayerData(AController* NewPlayer)
 	newMatchPlayerData.Team = targetTeam;
 	MatchPlayersData.Add(newMatchPlayerData);
 	OnPlayerDataUpdate.Broadcast();
+
+	// Below must come after adding to MatchPlayersData array so that the SteamID update can occur.
+	if (newPlayerState) // If not a bot
+	{
+		// Ask the controlling client of NewPlayer to assign their own SteamID to the server. 
+		// If not connected to Steam, make it the PlayerID for testing purposes.
+		if (SteamAPI_Init())
+		{
+			AShirePlayerController* shirePlayerController = Cast<AShirePlayerController>(NewPlayer);
+			shirePlayerController->Client_UpdateMatchPlayerSteamID(newMatchPlayerData.PlayerID);
+		}
+		else
+		{
+			newMatchPlayerData.SteamID = FString::FromInt(newMatchPlayerData.PlayerID);
+		}
+	}
 }
 
 FMatchPlayerData* AShireGameState::GetMatchPlayerData(int32 PlayerID)
@@ -147,6 +166,15 @@ void AShireGameState::UpdateMatchPlayerDeaths(int32 PlayerID, int DeltaDeaths)
 	FMatchPlayerData* MatchPlayerData = GetMatchPlayerData(PlayerID);
 	MatchPlayerData->DeathCount += DeltaDeaths;
 	OnPlayerDataUpdate.Broadcast();
+}
+
+void AShireGameState::Server_UpdateMatchPlayerSteamID_Implementation(int32 PlayerID, const FString& SteamID)
+{
+	FMatchPlayerData* matchPlayerData = GetMatchPlayerData(PlayerID);
+	if ( matchPlayerData )
+	{
+		matchPlayerData->SteamID = SteamID;
+	}
 }
 
 void AShireGameState::OnPlayerTakeDamage(AController* DamageReceiver, AController* DamageDealer, float DamageAmount)

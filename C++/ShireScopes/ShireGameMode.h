@@ -142,8 +142,12 @@ protected:
 
 	/** Setup all bots. */
 	void SetupAllBots();
+
 	/** @returns true if every player on @param TargetTeam is dead. */
 	bool IsTeamDead(int TargetTeam) const;
+
+	/** Sends the match results to the DatabaseManager to update the leaderboard. */
+	void UpdateLeaderboard();
 
 private:
 

@@ -6,6 +6,7 @@
 #include "AdvancedFriendsGameInstance.h"
 #include "LobbyPlayerData.h"
 #include "CustomGameState.h"
+#include "DatabaseManager.h"
 #include "ShireGameInstance.generated.h"
 
 /**
@@ -95,6 +96,21 @@ public:
 	/** Used to handle a client who prematurely left a session hosted by another. */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void EndClientSession(APlayerController* Player);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// DATABASE
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	/** 
+	 * The only database manager that should be used throughout the game.
+	 * Since this must be constructed in a Level, this will be set and destroyed between travels.
+	 */
+	UPROPERTY(BlueprintReadWrite)
+	ADatabaseManager* DatabaseManager;
+
+	/** Creates the DatabaseManager in the existing level and caches its reference. */
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void SetupDatabaseManager();
 
 protected:
 

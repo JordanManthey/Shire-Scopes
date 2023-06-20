@@ -29,6 +29,10 @@ public:
 	/** Toggle the sensitivity type for this player based on @param bUseScopeSensitivity. */
 	void ToggleLookSensitivity(bool bUseScopeSensitivity);
 
+	/** Called from the client to update the server ShireGameState with this client's SteamID. */
+	UFUNCTION(Client, Reliable)
+	void Client_UpdateMatchPlayerSteamID(int32 PlayerID);
+
 protected:
 
 	/** The widget used for displaying game stats. */

@@ -25,6 +25,8 @@ AShireGameMode::AShireGameMode()
 void AShireGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+	UShireGameInstance* shireGameInstance = Cast<UShireGameInstance>(GetGameInstance());
+	shireGameInstance->SetupDatabaseManager();
 }
 
 void AShireGameMode::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
@@ -119,6 +121,13 @@ void AShireGameMode::EndMatch()
 	AShireGameState* shireGameState = Cast<AShireGameState>(GameState);
 	shireGameState->Multicast_OnMatchOver(GetMatchWinningTeam());
 
+	// Send match results to database if this was a matchmaking session.
+	FString isMatchmaking = UGameplayStatics::ParseOption(OptionsString, TEXT("matchmaking"));
+	if ( isMatchmaking == "1" )
+	{
+		UpdateLeaderboard();
+	}
+
 	FTimerDelegate timerDelegate;
 	FTimerHandle unusedHandle;
 	timerDelegate.BindUFunction(this, FName("ExitMatch"));
@@ -211,6 +220,35 @@ bool AShireGameMode::IsTeamDead(int TargetTeam) const
 	}
 
 	return (deathCount == teamSize);
+}
+
+void AShireGameMode::UpdateLeaderboard()
+{
+	UShireGameInstance* shireGameInstance = Cast<UShireGameInstance>(GetGameInstance());
+	ADatabaseManager* databaseManager = shireGameInstance->DatabaseManager;
+
+	if ( databaseManager )
+	{
+		int winningTeam = GetMatchWinningTeam();
+		FMatchPlayerData winningPlayerData;
+		FMatchPlayerData losingPlayerData;
+
+		AShireGameState* shireGameState = Cast<AShireGameState>(GameState);
+		for (int i = 0; i < shireGameState->MatchPlayersData.Num(); i++)
+		{
+			FMatchPlayerData matchPlayerData = shireGameState->MatchPlayersData[i];
+			if (matchPlayerData.Team == winningTeam)
+			{
+				winningPlayerData = matchPlayerData;
+			}
+			else
+			{
+				losingPlayerData = matchPlayerData;
+			}
+		}
+
+		databaseManager->UpdateLeaderboard(winningPlayerData, losingPlayerData);
+	}
 }
 
 void AShireGameMode::ResetSpawnPoints()
@@ -322,6 +360,9 @@ void AShireGameMode::SpawnPlayer(AController* Player)
 
 	AShireCharacter* newCharacter = GetWorld()->SpawnActor<AShireCharacter>(GetDefaultPawnClassForController(Player), spawnTransform, spawnParams);
 	Player->Possess(newCharacter);
+	
+	// Possessing the character will override its rotation with the controller rotation. Realign with PlayerStart.
+	newCharacter->SetActorRotation(playerStart->GetActorRotation().Quaternion());
 
 	// Destroy previous Character
 	if (prevCharacter)

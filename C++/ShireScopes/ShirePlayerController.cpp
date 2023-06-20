@@ -11,6 +11,7 @@
 #include "LoadingScreenWidget.h"
 #include "ShireGameInstance.h"
 #include "ShireSpectator.h"
+#include "steam/steam_api.h"
 
 AShirePlayerController::AShirePlayerController()
 {
@@ -96,6 +97,17 @@ void AShirePlayerController::Server_SpectateMode_Implementation(AShireCharacter*
 
 	// Possess spectator pawn.
 	Possess(spectatorPawn);
+}
+
+void AShirePlayerController::Client_UpdateMatchPlayerSteamID_Implementation(int32 PlayerID)
+{
+	AShireGameState* shireGameState = Cast<AShireGameState>(UGameplayStatics::GetGameState(GetWorld()));
+	if ( shireGameState )
+	{
+		CSteamID steamID = SteamUser()->GetSteamID();
+		FString stringSteamID = FString::Printf(TEXT("%llu"), steamID.ConvertToUint64());
+		shireGameState->Server_UpdateMatchPlayerSteamID(PlayerID, stringSteamID);
+	}
 }
 
 void AShirePlayerController::OnRoundStart()

@@ -97,6 +97,10 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_OnMatchOver(int WinningTeam);
 
+	/** Called from clients to update the server ShireGameState with their client-based SteamID.*/
+	UFUNCTION(Server, Reliable)
+	void Server_UpdateMatchPlayerSteamID(int32 PlayerID, const FString& SteamID);
+
 	void AddPlayerState(APlayerState* PlayerState) override;
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void OnPlayerLogout(APlayerController* Player) override;

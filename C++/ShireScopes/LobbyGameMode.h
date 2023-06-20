@@ -37,7 +37,7 @@ public:
 	 * @param GameModeName the name of the GameMode to use for the next Level. By default it is the Level's default GameMode.
 	 */
 	UFUNCTION(BlueprintCallable)
-	void StartGame(const FString& LevelName, const FString& GameModeName = FString(TEXT("")));
+	void StartGame(const FString& LevelName, const FString& GameModeName = FString(TEXT("")), bool IsMatchmkaing = false);
 
 	/** Handle a new bot added to the Lobby. */
 	UFUNCTION(BlueprintCallable)

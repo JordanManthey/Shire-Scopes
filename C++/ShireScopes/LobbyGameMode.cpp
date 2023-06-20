@@ -67,7 +67,7 @@ void ALobbyGameMode::SwapPlayerControllers(APlayerController* OldPC, APlayerCont
 	Super::SwapPlayerControllers(OldPC, NewPC);
 }
 
-void ALobbyGameMode::StartGame(const FString& LevelName, const FString& GameModeName)
+void ALobbyGameMode::StartGame(const FString& LevelName, const FString& GameModeName, bool IsMatchmaking)
 {
 	ALobbyGameState* lobbyGameState = Cast<ALobbyGameState>(GameState);
 	lobbyGameState->CacheTeamDataInPlayerStates(); // For Seamless Travel.
@@ -83,7 +83,7 @@ void ALobbyGameMode::StartGame(const FString& LevelName, const FString& GameMode
 		}
 	}
 
-	FString options = FString(TEXT("?playercount") + FString::FromInt(playerCount));
+	FString options = FString(TEXT("?playercount") + FString::FromInt(playerCount)) + FString(TEXT("?matchmaking=") + FString::FromInt(int(IsMatchmaking)));
 
 	if ( GameModeName.Len() > 0 )
 	{

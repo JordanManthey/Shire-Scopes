@@ -41,6 +41,11 @@ void UShireGameInstance::CacheGameStateClass()
 
 }
 
+void UShireGameInstance::SetupDatabaseManager_Implementation()
+{
+	// Defined in BP.
+}
+
 void UShireGameInstance::EndClientSession_Implementation(APlayerController* Player)
 {
 	// Defined in BP.

@@ -20,6 +20,9 @@ struct FMatchPlayerData {
 	UPROPERTY(BlueprintReadOnly)
 	int32 PlayerID;
 
+	UPROPERTY(BlueprintReadOnly)
+	FString SteamID;
+
 	UPROPERTY(BlueprintReadWrite)
 	int Team{ 1 };
 
